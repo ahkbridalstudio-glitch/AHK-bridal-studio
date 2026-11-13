@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+.sale-marquee-viewport { width: 100%; }
+.sale-marquee-track { display: flex; width: max-content; animation: sale-marquee-loop 16s linear infinite; will-change: transform; }
+.sale-marquee-copy { display: flex; flex: 0 0 auto; align-items: center; padding-right: 3rem; }
+.mobile-nav-slider { scroll-snap-type: x proximity; scrollbar-width: none; -webkit-overflow-scrolling: touch; touch-action: pan-x; }
+.mobile-nav-slider::-webkit-scrollbar { display: none; }
+@keyframes sale-marquee-loop {
+  to { transform: translate3d(-16.666667%, 0, 0); }
+}
+@media (prefers-reduced-motion: reduce) { .sale-marquee-track { animation: none; } .sale-marquee-copy[aria-hidden="true"] { display: none; } }
+
+@layer base {
+  :root {
+    --font-serif: "Cormorant Garamond", "Playfair Display", Georgia, serif;
+    --font-display: "Playfair Display", Georgia, serif;
+    --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: #FAF8F5;
+    color: #1E191B;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, .font-serif {
+    font-family: var(--font-serif);
+  }
+
+  .font-display {
+    font-family: var(--font-display);
+  }
+}
+
+/* Custom luxury gold metallic accents & subtle textures */
+.gold-shimmer {
+  background: linear-gradient(135deg, #BF953F 0%, #FCF6BA 25%, #B38728 50%, #FBF5B7 75%, #AA771C 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gold-border {
+  border-color: #D4AF37;
+}
+
+/* Subtle luxury scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F5EFEB;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D4C1A5;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #B38728;
+}
