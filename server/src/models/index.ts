@@ -229,12 +229,16 @@ const FeedbackSchema = new Schema(
   { timestamps: true }
 );
 
-export const ProductModel = mongoose.models.Product || mongoose.model('Product', ProductSchema);
-export const OrderModel = mongoose.models.Order || mongoose.model('Order', OrderSchema);
-export const InquiryModel = mongoose.models.Inquiry || mongoose.model('Inquiry', InquirySchema);
-export const CustomerModel = mongoose.models.Customer || mongoose.model('Customer', CustomerSchema);
-export const CarouselSlideModel = mongoose.models.CarouselSlide || mongoose.model('CarouselSlide', CarouselSlideSchema);
-export const DiscountCodeModel = mongoose.models.DiscountCode || mongoose.model('DiscountCode', DiscountCodeSchema);
-export const FeedbackModel = mongoose.models.Feedback || mongoose.model('Feedback', FeedbackSchema);
+function getModel(name: string, schema: Schema): mongoose.Model<any> {
+  return (mongoose.models[name] as mongoose.Model<any> | undefined) || mongoose.model<any>(name, schema);
+}
+
+export const ProductModel = getModel('Product', ProductSchema);
+export const OrderModel = getModel('Order', OrderSchema);
+export const InquiryModel = getModel('Inquiry', InquirySchema);
+export const CustomerModel = getModel('Customer', CustomerSchema);
+export const CarouselSlideModel = getModel('CarouselSlide', CarouselSlideSchema);
+export const DiscountCodeModel = getModel('DiscountCode', DiscountCodeSchema);
+export const FeedbackModel = getModel('Feedback', FeedbackSchema);
 
 

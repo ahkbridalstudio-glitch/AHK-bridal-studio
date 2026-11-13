@@ -1,9 +1,8 @@
 import express, { Request, Response } from 'express';
 import path from 'path';
-import fs from 'fs';
-import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-import { connectToMongoDB, getDatabaseStatus } from './src/server/db';
+import { fileURLToPath } from 'url';
+import { connectToMongoDB, getDatabaseStatus } from './config/db';
 import {
   ProductModel,
   OrderModel,
@@ -12,12 +11,11 @@ import {
   CarouselSlideModel,
   DiscountCodeModel,
   FeedbackModel
-} from './src/server/models';
-
-dotenv.config();
+} from './models';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const app = express();
 
@@ -104,6 +102,24 @@ function withCurrentSaleStatus<T extends Record<string, any>>(product: T) {
 }
 
 // Body Parser Middleware (with generous payload limit for base64 bridal photos)
+const allowedOrigins = (process.env.CLIENT_ORIGIN || 'http://localhost:5173,http://127.0.0.1:5173')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (!origin) return next();
+  if (!allowedOrigins.includes(origin)) {
+    return res.status(403).json({ error: 'Origin is not allowed by CORS' });
+  }
+  res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Vary', 'Origin');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  return next();
+});
 app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
@@ -800,7 +816,7 @@ app.delete('/api/feedback/:id', async (req: Request, res: Response) => {
   }
 });
 
-// ==================== VITE & FRONTEND INTEGRATION ====================
+// ==================== BACKEND STARTUP ====================
 
 async function setupServer() {
   const databaseConnected = await connectToMongoDB();
@@ -808,33 +824,9 @@ async function setupServer() {
     console.warn('[Server] MongoDB is unavailable; database API requests will fail until it is reachable.');
   }
 
-  const distPath = path.resolve(__dirname, 'dist');
-  const hasDist = fs.existsSync(distPath) && fs.existsSync(path.join(distPath, 'index.html'));
+  app.use('/api', (_req: Request, res: Response) => res.status(404).json({ error: 'Endpoint not found' }));
 
-  if (isProduction && hasDist) {
-    // Production mode: Serve compiled assets
-    console.log(`[Server] Serving production static assets from ${distPath}`);
-    app.use(express.static(distPath));
-
-    // Handle SPA client routing (skip API routes)
-    app.get('*', (req: Request, res: Response) => {
-      if (req.path.startsWith('/api')) {
-        return res.status(404).json({ error: 'Endpoint not found' });
-      }
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
-  } else {
-    // Development mode or fallback: Mount Vite middleware
-    console.log(`[Server] Mounting Vite middleware (isProduction: ${isProduction}, hasDist: ${hasDist})...`);
-    const { createServer: createViteServer } = await import('vite');
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa'
-    });
-    app.use(vite.middlewares);
-  }
-
-  const server = app.listen(PORT, 'localhost', () => {
+  const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`[Server] AHK Bridal Studio API listening on http://localhost:${PORT}`);
     console.log(`[Server] Environment: ${isProduction ? 'production' : 'development'}`);
   });
