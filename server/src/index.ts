@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import path from 'path';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
-import { connectToMongoDB, getDatabaseStatus } from './config/db';
+import { connectToMongoDB, getDatabaseStatus } from './config/db.js';
 import {
   ProductModel,
   OrderModel,
@@ -11,7 +11,7 @@ import {
   CarouselSlideModel,
   DiscountCodeModel,
   FeedbackModel
-} from './models';
+} from './models/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
