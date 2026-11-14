@@ -1,19 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
-  ChevronLeft,
   ChevronRight,
-  Play,
-  Pause,
-  Maximize2,
-  X,
   ShoppingBag,
   Eye,
   MessageCircle,
-  Sparkles,
-  Clock,
-  ZoomIn,
-  ZoomOut,
-  RotateCcw
+  Sparkles
 } from 'lucide-react';
 import { BridalProduct } from '../types/bridal';
 import { CarouselSlide } from '../types/admin';
@@ -96,10 +87,7 @@ export const BridalPictureCarousel: React.FC<BridalPictureCarouselProps> = ({
 
   const [trackIndex, setTrackIndex] = useState(1); // 1 = first real slide
   const [withTransition, setWithTransition] = useState(true);
-  const [isPlaying, setIsPlaying] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [lightboxZoom, setLightboxZoom] = useState(1);
   const [dragStartX, setDragStartX] = useState<number | null>(null);
   const [dragOffset, setDragOffset] = useState<number>(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -116,8 +104,6 @@ export const BridalPictureCarousel: React.FC<BridalPictureCarouselProps> = ({
     : trackIndex === totalSlides + 1
     ? 0
     : trackIndex - 1;
-
-  const currentSlide = activeSlides[logicalIndex] || activeSlides[0];
 
   // Re-enable CSS transition after instantaneous reset
   useEffect(() => {
@@ -164,7 +150,7 @@ export const BridalPictureCarousel: React.FC<BridalPictureCarouselProps> = ({
 
   // Handle Autoplay & Progress Ring
   useEffect(() => {
-    if (!isPlaying || isHovered || isDragging || lightboxOpen) {
+    if (isHovered || isDragging) {
       if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
       return;
     }
@@ -185,25 +171,7 @@ export const BridalPictureCarousel: React.FC<BridalPictureCarouselProps> = ({
     return () => {
       if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
     };
-  }, [isPlaying, isHovered, isDragging, lightboxOpen, nextSlide]);
-
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (lightboxOpen) {
-        if (e.key === 'Escape') setLightboxOpen(false);
-        if (e.key === 'ArrowRight') nextSlide();
-        if (e.key === 'ArrowLeft') prevSlide();
-        return;
-      }
-      if (isHovered) {
-        if (e.key === 'ArrowRight') nextSlide();
-        if (e.key === 'ArrowLeft') prevSlide();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isHovered, lightboxOpen, nextSlide, prevSlide]);
+  }, [isHovered, isDragging, nextSlide]);
 
   // Touch & Drag Handling for Silky Smooth Swiping
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -358,29 +326,6 @@ export const BridalPictureCarousel: React.FC<BridalPictureCarouselProps> = ({
               <span className="w-1.5 h-1.5 rounded-full bg-[#C5A059] animate-pulse" />
             </div>
 
-            {/* Right Action Icons (Play/Pause, Fullscreen Lightbox) */}
-            <div className="pointer-events-auto flex items-center gap-2">
-              <button
-                onClick={() => setIsPlaying(!isPlaying)}
-                className="p-2 sm:p-2.5 rounded-full bg-[#1A0307]/80 backdrop-blur-md border border-[#C5A059]/40 text-[#E5C378] hover:text-white hover:bg-[#360810] transition-colors shadow-lg cursor-pointer"
-                title={isPlaying ? 'Pause Autoplay' : 'Resume Autoplay'}
-                aria-label={isPlaying ? 'Pause' : 'Play'}
-              >
-                {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current" />}
-              </button>
-
-              <button
-                onClick={() => {
-                  setLightboxZoom(1);
-                  setLightboxOpen(true);
-                }}
-                className="p-2 sm:p-2.5 rounded-full bg-[#1A0307]/80 backdrop-blur-md border border-[#C5A059]/40 text-[#E5C378] hover:text-white hover:bg-[#360810] transition-colors shadow-lg cursor-pointer"
-                title="View Fullscreen High-Res Image"
-                aria-label="Fullscreen"
-              >
-                <Maximize2 className="w-4 h-4" />
-              </button>
-            </div>
           </div>
 
           {/* Picture Slides Track with Infinite Seamless Looping */}
@@ -525,7 +470,7 @@ export const BridalPictureCarousel: React.FC<BridalPictureCarouselProps> = ({
                           title="Direct WhatsApp Consultation with Bridal Stylist"
                         >
                           <MessageCircle className="w-4 h-4" />
-                          <span>WhatsApp Karigar</span>
+                          <span>WhatsApp</span>
                         </button>
                       </div>
                     </div>
@@ -535,24 +480,6 @@ export const BridalPictureCarousel: React.FC<BridalPictureCarouselProps> = ({
             })}
             </div>
           </div>
-
-          {/* Left Arrow Button */}
-          <button
-            onClick={prevSlide}
-            className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-30 p-2.5 sm:p-3.5 rounded-full bg-[#1A0307]/70 hover:bg-[#4A0E17] text-[#FAF8F5] border border-[#C5A059]/50 shadow-xl backdrop-blur-sm transition-all hover:scale-110 active:scale-95 cursor-pointer"
-            aria-label="Previous Slide"
-          >
-            <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 text-[#E5C378]" />
-          </button>
-
-          {/* Right Arrow Button */}
-          <button
-            onClick={nextSlide}
-            className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-30 p-2.5 sm:p-3.5 rounded-full bg-[#1A0307]/70 hover:bg-[#4A0E17] text-[#FAF8F5] border border-[#C5A059]/50 shadow-xl backdrop-blur-sm transition-all hover:scale-110 active:scale-95 cursor-pointer"
-            aria-label="Next Slide"
-          >
-            <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-[#E5C378]" />
-          </button>
 
           {/* Autoplay Progress Line at Bottom */}
           <div className="absolute bottom-0 inset-x-0 h-1 bg-white/20 z-30">
@@ -595,102 +522,6 @@ export const BridalPictureCarousel: React.FC<BridalPictureCarouselProps> = ({
         </div>
       </div>
 
-      {/* High-Resolution Lightbox Zoom Modal */}
-      {lightboxOpen && (
-        <div className="fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-between p-4 sm:p-6 backdrop-blur-md animate-fadeIn">
-          {/* Lightbox Header */}
-          <div className="w-full max-w-6xl flex items-center justify-between text-white z-20">
-            <div className="space-y-0.5">
-              <div className="flex items-center gap-2">
-                <span className="text-xs uppercase font-mono tracking-wider text-[#E5C378]">
-                  {currentSlide.occasion}
-                </span>
-                <span className="text-stone-400">·</span>
-                <span className="font-serif text-lg text-[#E5C378]">{currentSlide.urduTitle}</span>
-              </div>
-              <h4 className="font-serif text-lg sm:text-xl text-white font-medium">{currentSlide.title}</h4>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setLightboxZoom((prev) => Math.min(prev + 0.3, 2.5))}
-                className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
-                title="Zoom In"
-              >
-                <ZoomIn className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => setLightboxZoom((prev) => Math.max(prev - 0.3, 0.8))}
-                className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
-                title="Zoom Out"
-              >
-                <ZoomOut className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => setLightboxZoom(1)}
-                className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
-                title="Reset Zoom"
-              >
-                <RotateCcw className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => setLightboxOpen(false)}
-                className="p-2 rounded-full bg-[#7A0C1E] hover:bg-[#961228] text-white transition-colors ml-2"
-                title="Close Lightbox"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-
-          {/* Lightbox Center Image */}
-          <div className="relative flex-1 w-full max-w-6xl flex items-center justify-center overflow-hidden my-4">
-            <button
-              onClick={prevSlide}
-              className="absolute left-2 sm:left-4 z-20 p-3 rounded-full bg-black/60 hover:bg-[#4A0E17] text-white border border-white/20 transition-transform hover:scale-110"
-              aria-label="Previous"
-            >
-              <ChevronLeft className="w-6 h-6 text-[#E5C378]" />
-            </button>
-
-            <img
-              src={currentSlide.image}
-              alt={currentSlide.title}
-              referrerPolicy="no-referrer"
-              className="max-h-[75vh] max-w-full object-contain rounded-lg shadow-2xl transition-transform duration-300 select-none"
-              style={{ transform: `scale(${lightboxZoom})` }}
-            />
-
-            <button
-              onClick={nextSlide}
-              className="absolute right-2 sm:right-4 z-20 p-3 rounded-full bg-black/60 hover:bg-[#4A0E17] text-white border border-white/20 transition-transform hover:scale-110"
-              aria-label="Next"
-            >
-              <ChevronRight className="w-6 h-6 text-[#E5C378]" />
-            </button>
-          </div>
-
-          {/* Lightbox Bottom Footer */}
-          <div className="w-full max-w-6xl flex flex-wrap items-center justify-between gap-4 text-xs text-stone-300 border-t border-white/15 pt-3 z-20">
-            <div className="flex items-center gap-4">
-              <span>{currentSlide.fabric}</span>
-              <span>·</span>
-              <span>{currentSlide.colorway}</span>
-              <span>·</span>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => handleWhatsAppInquiry(currentSlide)}
-                className="px-4 py-1.5 rounded bg-[#25D366] text-black font-semibold flex items-center gap-1.5 hover:bg-[#20ba59] transition-colors"
-              >
-                <MessageCircle className="w-3.5 h-3.5" />
-                <span>WhatsApp Atelier</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </section>
   );
 };
